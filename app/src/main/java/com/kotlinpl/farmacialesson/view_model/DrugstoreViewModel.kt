@@ -3,12 +3,13 @@ package com.kotlinpl.farmacialesson.view_model
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kotlinpl.farmacialesson.data.model.toDrugstore
 import com.kotlinpl.farmacialesson.data.repository.DrugstoreRepository
+import com.kotlinpl.farmacialesson.domain.toDrugstore
 import com.kotlinpl.farmacialesson.util.Location
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import javax.inject.Inject
@@ -61,8 +62,13 @@ class DrugstoreViewModel @Inject constructor (
         }
     }
     
-    fun sortDrugstores(location: Location) {
-        // TODO: Ordenar las farmacias por distancia
+    fun sortDrugstores(userLocation: Location) {
+        _uiState.update { state ->
+            state.copy(
+                drugstores = state.drugstores.sortedBy { it.location.distanceTo(userLocation) }
+            )
+        }
+        Log.d("DrugstoreViewModel", "Sorted drugstores")
     }
 }
 

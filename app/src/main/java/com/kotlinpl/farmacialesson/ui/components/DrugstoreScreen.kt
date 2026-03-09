@@ -1,5 +1,6 @@
 package com.kotlinpl.farmacialesson.ui.components
 
+import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,15 +25,36 @@ import com.kotlinpl.farmacialesson.R
 import com.kotlinpl.farmacialesson.view_model.DrugstoreViewModel
 import com.kotlinpl.farmacialesson.view_model.DrugstoresErrors
 import com.kotlinpl.farmacialesson.view_model.LocationViewModel
+import com.kotlinpl.farmacialesson.ui.components.DrugstoreList
+
 
 @Composable
 fun DrugstoreScreen(
     modifier: Modifier = Modifier,
     drugstoreViewModel: DrugstoreViewModel = hiltViewModel(),
-//    locationViewModel: LocationViewModel = hiltViewModel()
+    locationViewModel: LocationViewModel = hiltViewModel()
     ) {
     val uiState = drugstoreViewModel.uiState.collectAsState()
+    val locationState = locationViewModel.location.collectAsState()
+
     var listOfPremissions by remember { mutableStateOf(listOf("")) }
+
+    val settingResultRequest = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { activityResult ->
+        if (activityResult.resultCode == Activity.RESULT_OK) {
+            locationViewModel.getCurrentLocation()
+        } else {
+            Log.e("DrugstoreScreen", "Location settings not enabled")
+        }
+    }
+
+    LaunchedEffect(locationViewModel.location) {
+        if (locationViewModel.location.value != null) {
+            drugstoreViewModel.sortDrugstores(locationViewModel.location.value!!)
+        }
+    }
+
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -41,23 +64,24 @@ fun DrugstoreScreen(
         }
     }
 
-//    val locationState = locationViewModel.location.collectAsState()
-
     Column(
-
+        modifier = modifier
     ) {
-        Text("Get permissions")
-        Button(onClick = {
-            permissionLauncher.launch(
-                arrayOf(
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
+        if(locationViewModel.hasLocationPermission()) {
+            LaunchedEffect(Unit) {
+                locationViewModel.checkLocationSettings(
+                    onSettingDisable = { intentRequestSender ->
+                        settingResultRequest.launch(intentRequestSender)
+                    },
+                    onSettingEnable = {
+                        locationViewModel.getCurrentLocation()
+                    }
                 )
-            )
-        }) {
-            Text("Get permissions")
-            Log.d("DrugstoreScreen", "Permissions: $listOfPremissions")
+            }
         }
+
+
+
 
         if(uiState.value.isLoading) {
             Column(
@@ -79,6 +103,11 @@ fun DrugstoreScreen(
 
             Log.e("DrugstoreScreen", "Error: ${uiState.value.error}")
         } else {
+            if (locationState.value != null) {
+                Text(text = "Lat: ${locationState.value!!.lat}")
+                Text(text = "Long: ${locationState.value!!.long}")
+            }
+
             DrugstoreList(
                 drugstores = uiState.value.drugstores,
                 modifier = modifier

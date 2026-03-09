@@ -15,12 +15,3 @@ data class DrugstoreResponse(
 
 }
 
-fun DrugstoreResponse.toDrugstore(): Drugstore = Drugstore(
-    fecha = this.fecha,
-    id = this.local_id,
-    name = this.local_nombre,
-    location = Location(
-        lat = this.local_lat.toDouble(),
-        long = this.local_lng.toDouble()
-    )
-)
