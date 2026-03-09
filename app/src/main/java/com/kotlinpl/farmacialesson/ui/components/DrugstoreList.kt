@@ -4,20 +4,20 @@ import android.util.Log
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.kotlinpl.farmacialesson.data.model.DrugstoreResponse
+import com.kotlinpl.farmacialesson.domain.Drugstore
 
 @Composable
 fun DrugstoreList(
-    drugstoreResponses: List<DrugstoreResponse>,
+    drugstores: List<Drugstore>,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier
     ) {
-        items(drugstoreResponses.size) { index ->
-            Drugstore(drugstoreResponse = drugstoreResponses[index])
+        items(drugstores.size) { index ->
+            Drugstore(drugstore = drugstores[index])
         }
     }
 
-    Log.d("DrugstoreList", "Drugstores: $drugstoreResponses")
+    Log.d("DrugstoreList", "Drugstores: $drugstores")
 }

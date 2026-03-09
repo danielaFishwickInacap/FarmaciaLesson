@@ -35,7 +35,7 @@ class DrugstoreViewModel @Inject constructor (
 
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        drugstoreResponses = drugstores.map { it.toDrugstore() },
+                        drugstores = drugstores.map { it.toDrugstore() },
                         error = null
                     )
                 } else {
@@ -45,14 +45,14 @@ class DrugstoreViewModel @Inject constructor (
                     val errorMessage = e.message
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        drugstoreResponses = emptyList(),
+                        drugstores = emptyList(),
                         error = DrugstoresErrors.SerializationError
                     )
                     Log.e("DrugstoreViewModel", "Error fetching drugstores: $errorMessage")
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    drugstoreResponses = emptyList(),
+                    drugstores = emptyList(),
                     error = DrugstoresErrors.UnknownError
                 )
 
@@ -62,7 +62,7 @@ class DrugstoreViewModel @Inject constructor (
     }
     
     fun sortDrugstores(location: Location) {
-        
+        // TODO: Ordenar las farmacias por distancia
     }
 }
 
